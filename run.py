@@ -72,8 +72,6 @@ parser.add_argument('--source_prefix', type=str, default=None, help="")
 
 
 def get_paraphrase_dataset(dataset, tokenizer, max_src_len=256, max_tar_len=256, truncation=True, padding='max_length'):
-    prefix = args.source_prefix if args.source_prefix is not None else ""
-
     def example_fn(examples):
 
         output = tokenizer(examples['sentence1'], truncation=truncation, padding=padding,
@@ -85,31 +83,7 @@ def get_paraphrase_dataset(dataset, tokenizer, max_src_len=256, max_tar_len=256,
         output["labels"] = labels["input_ids"]
         return output
 
-    def preprocess_function(examples):
-        inputs, targets = [], []
-        for i in range(len(examples['sentence1'])):
-            if examples['sentence1'][i] is not None and examples['sentence2'][i] is not None:
-                inputs.append(examples['sentence1'][i])
-                targets.append(examples['sentence2'][i])
-
-        inputs = [prefix + inp for inp in inputs]
-        model_inputs = tokenizer(inputs, max_length=max_src_len, padding=padding, truncation=truncation)
-
-        # Setup the tokenizer for targets
-        with tokenizer.as_target_tokenizer():
-            labels = tokenizer(targets, max_length=max_tar_len, padding=padding, truncation=truncation)
-
-        # If we are padding here, replace all tokenizer.pad_token_id in the labels by -100 when we want to ignore
-        # padding in the loss.
-        if padding == "max_length" and args.ignore_pad_token_for_loss:
-            labels["input_ids"] = [
-                [(l if l != tokenizer.pad_token_id else -100) for l in label] for label in labels["input_ids"]
-            ]
-
-        model_inputs["labels"] = labels["input_ids"]
-        return model_inputs
-
-    dataset = dataset.map(preprocess_function, batched=True)
+    dataset = dataset.map(example_fn, batched=True)
     return dataset
 
 
