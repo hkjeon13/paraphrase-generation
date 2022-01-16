@@ -64,7 +64,6 @@ parser.add_argument('--do_test', type=boolean_string, default=False, help="Wheth
 parser.add_argument('--path_prediction', type=str, default="test_output.json",
                     help="Prediction outputs for the test data.")
 parser.add_argument('--metric_for_best_model', type=str, default=None, help="")
-parser.add_argument('--initial_ckpt', type=str, default=None, help="")
 parser.add_argument('--generation_num_beams', type=int, default=1, help="")
 parser.add_argument('--tpu_num_cores', type=int, default=None, help="")
 parser.add_argument('--ignore_pad_token_for_loss', type=boolean_string, default=True, help='')
@@ -118,7 +117,7 @@ def main():
 
     training_arguments = Seq2SeqTrainingArguments(
         output_dir=os.path.join(args.output_dir, args.language_model),
-        resume_from_checkpoint=args.initial_ckpt,
+        resume_from_checkpoint=args.resume,
         tpu_num_cores=args.tpu_num_cores,
         logging_strategy=args.logging_strategy,
         logging_steps=args.logging_steps,
@@ -161,7 +160,6 @@ def main():
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
-        print("predictions:", preds)
         decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
         if args.ignore_pad_token_for_loss:
             # Replace -100 in the labels as we can't decode them.
@@ -191,7 +189,7 @@ def main():
         data_collator=data_collator
     )
 
-    trainer.train()
+    trainer.train(resume_from_checkpoint=args.resume)
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
