@@ -105,7 +105,11 @@ def main():
     eval_dataset = get_paraphrase_dataset(dataset['validation'], tokenizer, max_src_len=args.max_src_len,
                                           max_tar_len=args.max_tar_len, truncation=args.truncation,
                                           padding=args.padding)
-    model = AutoModelForSeq2SeqLM.from_pretrained(args.language_model)
+    if args.resume:
+        model = AutoModelForSeq2SeqLM.from_pretrained(args.resume)
+    else:
+        model = AutoModelForSeq2SeqLM.from_pretrained(args.language_model)
+
     greater_is_better = args.metric_for_best_model if args.metric_for_best_model else "loss"
     label_pad_token_id = -100 if args.ignore_pad_token_for_loss else tokenizer.pad_token_id
     data_collator = DataCollatorForSeq2Seq(
@@ -189,7 +193,7 @@ def main():
         data_collator=data_collator
     )
 
-    trainer.train(resume_from_checkpoint=args.resume)
+    trainer.train()
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
