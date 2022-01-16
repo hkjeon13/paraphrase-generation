@@ -65,7 +65,7 @@ parser.add_argument('--path_prediction', type=str, default="test_output.json",
                     help="Prediction outputs for the test data.")
 parser.add_argument('--metric_for_best_model', type=str, default=None, help="")
 parser.add_argument('--initial_ckpt', type=str, default=None, help="")
-parser.add_argument('--generation_num_beams', type=int, default=5, help="")
+parser.add_argument('--generation_num_beams', type=int, default=1, help="")
 parser.add_argument('--tpu_num_cores', type=int, default=None, help="")
 parser.add_argument('--ignore_pad_token_for_loss', type=boolean_string, default=True, help='')
 parser.add_argument('--source_prefix', type=str, default=None, help="")
@@ -106,7 +106,6 @@ def main():
     eval_dataset = get_paraphrase_dataset(dataset['validation'], tokenizer, max_src_len=args.max_src_len,
                                           max_tar_len=args.max_tar_len, truncation=args.truncation,
                                           padding=args.padding)
-#    eval_dataset = eval_dataset.select(range(30))
     model = AutoModelForSeq2SeqLM.from_pretrained(args.language_model)
     greater_is_better = args.metric_for_best_model if args.metric_for_best_model else "loss"
     label_pad_token_id = -100 if args.ignore_pad_token_for_loss else tokenizer.pad_token_id
@@ -196,4 +195,8 @@ def main():
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
-   
+    main()
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    main()
