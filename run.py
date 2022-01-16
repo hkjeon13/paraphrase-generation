@@ -81,7 +81,7 @@ def get_paraphrase_dataset(dataset, tokenizer, max_src_len=256, max_tar_len=256,
             labels = tokenizer(examples['sentence2'], padding=padding, max_length=max_tar_len, truncation=truncation)
 
         output["labels"] = labels["input_ids"]
-        output["is_paraphrased"] = examples['labels']['binary-label']
+        output["is_paraphrased"] = [l['binary-label'] for l in examples['labels']]
         return output
 
     dataset = dataset.map(example_fn, batched=True)
