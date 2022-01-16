@@ -81,9 +81,11 @@ def get_paraphrase_dataset(dataset, tokenizer, max_src_len=256, max_tar_len=256,
             labels = tokenizer(examples['sentence2'], padding=padding, max_length=max_tar_len, truncation=truncation)
 
         output["labels"] = labels["input_ids"]
+        output["is_paraphrased"] = examples['binary-label']
         return output
 
     dataset = dataset.map(example_fn, batched=True)
+    dataset = dataset.filter(lambda e: e["is_paraphrased"] == 1)
     return dataset
 
 
@@ -96,11 +98,11 @@ def main():
     args = parser.parse_args()
     spliter = Kkma()
     dataset = load_dataset('klue', 'sts')
-    print("DATASET:", dataset)
     tokenizer = get_tokenizer(args.language_model)
     train_dataset = get_paraphrase_dataset(dataset['train'], tokenizer, max_src_len=args.max_src_len,
                                            max_tar_len=args.max_tar_len, truncation=args.truncation,
                                            padding=args.padding)
+
     eval_dataset = get_paraphrase_dataset(dataset['validation'], tokenizer, max_src_len=args.max_src_len,
                                           max_tar_len=args.max_tar_len, truncation=args.truncation,
                                           padding=args.padding)
@@ -194,8 +196,4 @@ def main():
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
-    main()
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-    main()
+   
