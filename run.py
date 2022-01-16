@@ -95,6 +95,7 @@ def get_tokenizer(language_model):
 def main():
     spliter = Kkma()
     dataset = load_dataset('klue', 'sts')
+    print("DATASET:", dataset)
     tokenizer = get_tokenizer(args.language_model)
     train_dataset = get_paraphrase_dataset(dataset['train'], tokenizer, max_src_len=args.max_src_len,
                                            max_tar_len=args.max_tar_len, truncation=args.truncation,
