@@ -193,6 +193,7 @@ def main():
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
+    args = parser.parse_args()
     main()
 
 if __name__ == '__main__':
