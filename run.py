@@ -1,4 +1,4 @@
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Seq2SeqTrainer, Seq2SeqTrainingArguments, T5Tokenizer, \
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Seq2SeqTrainer, Seq2SeqTrainingArguments, T5Tokenizer, BartTokenizer,\
     EarlyStoppingCallback, DataCollatorForSeq2Seq,BartModel
 from datasets import load_dataset, load_metric
 import argparse
@@ -95,7 +95,7 @@ def get_tokenizer(language_model):
     elif language_model=='koT5':
         return T5Tokenizer.from_pretrained(language_model)
     elif language_model == 'KoBART':
-        return get_kobart_tokenizer()
+        return BartTokenizer.from_pretrained('gogamza/kobart-base-v2')
     else:
         return AutoTokenizer.from_pretrained(language_model)
 
@@ -104,7 +104,7 @@ def get_model(language_model, resume=None):
     if resume:
         return AutoModelForSeq2SeqLM.from_pretrained(resume)
     if language_model == 'KoBART':
-        return BartModel.from_pretrained(get_pytorch_kobart_model())
+        return BartModel.from_pretrained('gogamza/kobart-base-v2')
     else:
         return AutoModelForSeq2SeqLM.from_pretrained(language_model)
 
