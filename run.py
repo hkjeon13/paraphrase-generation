@@ -100,7 +100,7 @@ def get_model(language_model, resume=None):
     if resume:
         return AutoModelForSeq2SeqLM.from_pretrained(resume)
     if language_model == 'KoBART':
-        return BartModel.from_pretrained('gogamza/kobart-base-v2')
+        return AutoTokenizer.from_pretrained('gogamza/kobart-base-v2')
     else:
         return AutoModelForSeq2SeqLM.from_pretrained(language_model)
 
