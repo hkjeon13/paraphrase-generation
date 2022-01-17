@@ -91,6 +91,8 @@ def get_paraphrase_dataset(dataset, tokenizer, max_src_len=256, max_tar_len=256,
 def get_tokenizer(language_model):
     if language_model.startswith('KETI-AIR/ke-t5'):
         return T5Tokenizer.from_pretrained(language_model)
+    elif language_model=='koT5':
+        return T5Tokenizer.from_pretrained(language_model)
 
 
 def main():
@@ -105,6 +107,7 @@ def main():
     eval_dataset = get_paraphrase_dataset(dataset['validation'], tokenizer, max_src_len=args.max_src_len,
                                           max_tar_len=args.max_tar_len, truncation=args.truncation,
                                           padding=args.padding)
+    
     if args.resume:
         model = AutoModelForSeq2SeqLM.from_pretrained(args.resume)
     else:
@@ -194,11 +197,11 @@ def main():
     )
 
     trainer.train()
+    trainer.save_model('./koT5/')
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
     main()
 
 if __name__ == '__main__':
-    args = parser.parse_args()
-    main()
+    args = parser.
