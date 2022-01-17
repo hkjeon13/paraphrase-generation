@@ -1,5 +1,4 @@
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Seq2SeqTrainer, Seq2SeqTrainingArguments, T5Tokenizer, BartTokenizer,\
-    EarlyStoppingCallback, DataCollatorForSeq2Seq,BartModel
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Seq2SeqTrainer, Seq2SeqTrainingArguments, T5Tokenizer, BartTokenizer, EarlyStoppingCallback, DataCollatorForSeq2Seq,BartModel
 from datasets import load_dataset, load_metric
 import argparse
 import numpy as np
@@ -95,7 +94,7 @@ def get_tokenizer(language_model):
     elif language_model=='koT5':
         return T5Tokenizer.from_pretrained(language_model)
     elif language_model == 'KoBART':
-        return BartTokenizer.from_pretrained('gogamza/kobart-base-v2')
+        return get_kobart_tokenizer()
     else:
         return AutoTokenizer.from_pretrained(language_model)
 
@@ -104,7 +103,7 @@ def get_model(language_model, resume=None):
     if resume:
         return AutoModelForSeq2SeqLM.from_pretrained(resume)
     if language_model == 'KoBART':
-        return BartModel.from_pretrained('gogamza/kobart-base-v2')
+        return BartModel.from_pretrained(get_pytorch_kobart_model())
     else:
         return AutoModelForSeq2SeqLM.from_pretrained(language_model)
 
@@ -127,14 +126,12 @@ def main():
     label_pad_token_id = -100 if args.ignore_pad_token_for_loss else tokenizer.pad_token_id
     data_collator = DataCollatorForSeq2Seq(
         tokenizer,
-        model=model,
         label_pad_token_id=label_pad_token_id,
         pad_to_multiple_of=8
     )
 
     training_arguments = Seq2SeqTrainingArguments(
         output_dir=os.path.join(args.output_dir, args.language_model),
-        resume_from_checkpoint=args.resume,
         tpu_num_cores=args.tpu_num_cores,
         logging_strategy=args.logging_strategy,
         logging_steps=args.logging_steps,
