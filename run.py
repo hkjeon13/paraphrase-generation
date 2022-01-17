@@ -1,10 +1,11 @@
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Seq2SeqTrainer, Seq2SeqTrainingArguments, T5Tokenizer, \
-    EarlyStoppingCallback, DataCollatorForSeq2Seq
+    EarlyStoppingCallback, DataCollatorForSeq2Seq,BartModel
 from datasets import load_dataset, load_metric
 import argparse
 import numpy as np
 import os
 from konlpy.tag import Kkma
+from kobart import get_kobart_tokenizer, get_pytorch_kobart_model
 
 
 def boolean_string(s):
@@ -93,7 +94,16 @@ def get_tokenizer(language_model):
         return T5Tokenizer.from_pretrained(language_model)
     elif language_model=='koT5':
         return T5Tokenizer.from_pretrained(language_model)
+    elif language_model=='KoBART':
+        return get_kobart_tokenizer()
 
+
+def get_model(language_model, resume=None):
+    if language_model=='KoBART':
+        return BartModel.from_pretrained(get_pytorch_kobart_model())
+    if resume:
+        return AutoModelForSeq2SeqLM.from_pretrained(resume)
+    return AutoModelForSeq2SeqLM.from_pretrained(language_model)
 
 def main():
     args = parser.parse_args()
@@ -108,10 +118,7 @@ def main():
                                           max_tar_len=args.max_tar_len, truncation=args.truncation,
                                           padding=args.padding)
     
-    if args.resume:
-        model = AutoModelForSeq2SeqLM.from_pretrained(args.resume)
-    else:
-        model = AutoModelForSeq2SeqLM.from_pretrained(args.language_model)
+    model = get_model(args.language_model, args.resume)
 
     greater_is_better = args.metric_for_best_model if args.metric_for_best_model else "loss"
     label_pad_token_id = -100 if args.ignore_pad_token_for_loss else tokenizer.pad_token_id
@@ -199,10 +206,11 @@ def main():
     trainer.train()
     trainer.save_model('./koT5/')
 
+
 def _mp_fn(index):
     # For xla_spawn (TPUs)
-    main()
-
-if __name__ == '__main__':
     args = parser.parse_args()
     main()
+
+
+if
