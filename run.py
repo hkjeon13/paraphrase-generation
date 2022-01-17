@@ -99,11 +99,12 @@ def get_tokenizer(language_model):
 
 
 def get_model(language_model, resume=None):
-    if language_model=='KoBART':
-        return BartModel.from_pretrained(get_pytorch_kobart_model())
     if resume:
         return AutoModelForSeq2SeqLM.from_pretrained(resume)
-    return AutoModelForSeq2SeqLM.from_pretrained(language_model)
+    if language_model=='KoBART':
+        return BartModel.from_pretrained(get_pytorch_kobart_model())
+    else:
+        return AutoModelForSeq2SeqLM.from_pretrained(language_model)
 
 def main():
     args = parser.parse_args()
@@ -213,4 +214,5 @@ def _mp_fn(index):
     main()
 
 
-if
+if __name__ == '__main__':
+    args = parser.parse_arg
