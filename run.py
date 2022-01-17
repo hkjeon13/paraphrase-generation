@@ -107,6 +107,7 @@ def get_model(language_model, resume=None):
     else:
         return AutoModelForSeq2SeqLM.from_pretrained(language_model)
 
+
 def main():
     args = parser.parse_args()
     spliter = Kkma()
@@ -204,7 +205,7 @@ def main():
     )
 
     trainer.train()
-    trainer.save_model('./koT5/')
+    trainer.save_model('./KoBART/')
 
 
 def _mp_fn(index):
@@ -215,4 +216,4 @@ def _mp_fn(index):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    main()
+    mai
