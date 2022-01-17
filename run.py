@@ -1,4 +1,4 @@
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Seq2SeqTrainer, Seq2SeqTrainingArguments, T5Tokenizer, BartTokenizer, EarlyStoppingCallback, DataCollatorForSeq2Seq,BartModel
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Seq2SeqTrainer, Seq2SeqTrainingArguments, T5Tokenizer, BartTokenizer, TrainingArguments,EarlyStoppingCallback, DataCollatorForSeq2Seq,BartModel
 from datasets import load_dataset, load_metric
 import argparse
 import numpy as np
@@ -89,12 +89,12 @@ def get_paraphrase_dataset(dataset, tokenizer, max_src_len=256, max_tar_len=256,
 
 
 def get_tokenizer(language_model):
-    if language_model.startswith('KETI-AIR/ke-t5'):
+    if language_model.startswith('KETI-AIR/ke-t5-base'):
         return T5Tokenizer.from_pretrained(language_model)
     elif language_model=='koT5':
         return T5Tokenizer.from_pretrained(language_model)
     elif language_model == 'KoBART':
-        return get_kobart_tokenizer()
+        return BartTokenizer.from_pretrained('gogamza/kobart-base-v2')
     else:
         return AutoTokenizer.from_pretrained(language_model)
 
@@ -103,14 +103,13 @@ def get_model(language_model, resume=None):
     if resume:
         return AutoModelForSeq2SeqLM.from_pretrained(resume)
     if language_model == 'KoBART':
-        return BartModel.from_pretrained(get_pytorch_kobart_model())
+        return BartModel.from_pretrained('gogamza/kobart-base-v2')
     else:
         return AutoModelForSeq2SeqLM.from_pretrained(language_model)
 
 
 def main():
     args = parser.parse_args()
-    spliter = Kkma()
     dataset = load_dataset('klue', 'sts')
     tokenizer = get_tokenizer(args.language_model)
     train_dataset = get_paraphrase_dataset(dataset['train'], tokenizer, max_src_len=args.max_src_len,
@@ -162,37 +161,6 @@ def main():
 
     metric = load_metric("rouge")
 
-    def postprocess_text(preds, labels):
-        preds = [pred.strip() for pred in preds]
-        labels = [label.strip() for label in labels]
-
-        preds = ["\n".join(spliter.sentences(pred)) for pred in preds]
-        labels = ["\n".join(spliter.sentences(label)) for label in labels]
-
-        return preds, labels
-
-    def compute_metrics(eval_preds):
-        preds, labels = eval_preds
-        if isinstance(preds, tuple):
-            preds = preds[0]
-        decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
-        if args.ignore_pad_token_for_loss:
-            # Replace -100 in the labels as we can't decode them.
-            labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-        # Some simple post-processing
-        decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
-
-        result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
-        # Extract a few results from ROUGE
-        result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
-
-        prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
-        result["gen_len"] = np.mean(prediction_lens)
-        result = {k: round(v, 4) for k, v in result.items()}
-        return result
-
     trainer = Seq2SeqTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -200,7 +168,6 @@ def main():
         args=training_arguments,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        compute_metrics=compute_metrics,
         data_collator=data_collator
     )
 
@@ -216,4 +183,4 @@ def _mp_fn(index):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    mai
+    main()
