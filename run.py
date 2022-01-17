@@ -94,14 +94,14 @@ def get_tokenizer(language_model):
         return T5Tokenizer.from_pretrained(language_model)
     elif language_model=='koT5':
         return T5Tokenizer.from_pretrained(language_model)
-    elif language_model=='KoBART':
-        return get_kobart_tokenizer()
+    elif language_model == 'KoBART':
+        return AutoTokenizer.from_pretrained('gogamza/kobart-base-v2')
 
 
 def get_model(language_model, resume=None):
     if resume:
         return AutoModelForSeq2SeqLM.from_pretrained(resume)
-    if language_model=='KoBART':
+    if language_model == 'KoBART':
         return BartModel.from_pretrained(get_pytorch_kobart_model())
     else:
         return AutoModelForSeq2SeqLM.from_pretrained(language_model)
@@ -215,4 +215,5 @@ def _mp_fn(index):
 
 
 if __name__ == '__main__':
-    args = parser.parse_arg
+    args = parser.parse_args()
+    main()
