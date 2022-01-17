@@ -95,7 +95,7 @@ def get_tokenizer(language_model):
     elif language_model=='koT5':
         return T5Tokenizer.from_pretrained(language_model)
     elif language_model == 'KoBART':
-        return AutoTokenizer.from_pretrained('gogamza/kobart-base-v2')
+        return T5Tokenizer.from_pretrained('gogamza/kobart-base-v2')
 
 
 def get_model(language_model, resume=None):
@@ -104,7 +104,7 @@ def get_model(language_model, resume=None):
     if language_model == 'KoBART':
         return AutoModelForSeq2SeqLM.from_pretrained('gogamza/kobart-base-v2')
     else:
-        return AutoModelForSeq2SeqLM.from_pretrained(language_model)
+        return BartModel.from_pretrained(language_model)
 
 def main():
     args = parser.parse_args()
