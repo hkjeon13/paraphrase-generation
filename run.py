@@ -3,9 +3,6 @@ from datasets import load_dataset, load_metric
 import argparse
 import numpy as np
 import os
-from konlpy.tag import Kkma
-from kobart import get_kobart_tokenizer, get_pytorch_kobart_model
-
 
 def boolean_string(s):
     if s not in {'False', 'True'}:
