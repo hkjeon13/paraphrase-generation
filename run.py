@@ -204,4 +204,5 @@ def _mp_fn(index):
     main()
 
 if __name__ == '__main__':
-    args = parser.
+    args = parser.parse_args()
+    main()
